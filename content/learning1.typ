@@ -39,6 +39,35 @@ Our goal is to make sure that the regret grows sublinearly in $T$ no matter the 
   The natural question is: _how to prioritize?_
 ]
 
+#example[Utility and regret vectors in a two-player game][
+  Consider a two-player zero-sum game with payoff matrices
+  $
+    U_1 = mat(2, 1; 0, 2), quad U_2 = -U_1.
+  $
+  Player 1 chooses a row and player 2 chooses a column.
+  $
+    vx^((1)) = vec(1/2, 1/2), quad vy^((1)) = vec(1/4, 3/4).
+  $
+  Each player's utility vector $vg$ lists the expected payoff of each action against the other player's current mixed strategy:
+  $
+  
+  vg_1^((1)) = U_1 vy^((1)) = vec(5/4, 3/2),
+  qquad vg_2^((1)) = U_2^top vx^((1)) = vec(-1, -3/2).
+
+  $
+  Their expected utilities are therefore
+  $
+    ip(vg_1^((1)), vx^((1))) = 11/8,
+    quad ip(vg_2^((1)), vy^((1))) = -11/8.
+  $
+  Starting from $vr_1^((0)) = vr_2^((0)) = 0$, the cumulative action regret vectors after this round are
+  $
+    vr_1^((1)) &= vg_1^((1)) - 11/8 vone = vec(-1/8, 1/8), qquad
+    vr_2^((1)) &= vg_2^((1)) - (-11/8) vone = vec(3/8, -1/8).
+  $
+  Player 1 would have gained $1/8$ more expected utility by always choosing the second row, while player 2 would have gained $3/8$ more by always choosing the first column. In later rounds, we add up across all rounds to get our regret vectors.
+]
+
 == Follow-the-leader
 
 Perhaps the most natural idea would be to always play the action with the highest cumulated regret (breaking ties, say, lexicographically). After all, this is the action we wish the most we had played in the past. This algorithm is called _follow-the-leader (FTL)_. Unfortunately, this idea is known not to work. To see that, consider the following sequence of gradient vectors:
@@ -401,13 +430,9 @@ The next plots illustrate the behavior of OGD and MWU in a simple $2 times 2$ ga
     $
     Normalizing the coordinates to sum to one therefore yields
     $
-      x_a^* = (exp(eta r_a)exp(-1-lambda)) / (sum_(b in A) exp(eta r_b)exp(1-lambda))=exp(eta r_a) / (sum_(b in A) exp(eta r_b)) .
+      x_a^* = (exp(eta r_a)exp(-1-lambda)) / (sum_(b in A) exp(eta r_b)exp(-1-lambda))=exp(eta r_a) / (sum_(b in A) exp(eta r_b)) .
     $
-    This candidate has strictly positive coordinates. Since $F$ is strictly concave on the simplex, it is the unique global maximizer, including over boundary points. Indeed, the concavity inequality at $vx^*$ gives
-    $
-      F(vx) <= F(vx^*) + ip(nabla F(vx^*), vx - vx^*) = F(vx^*),
-    $
-    because $nabla F(vx^*) = lambda vone$ and both strategies sum to one. Thus the FTRL strategy is exactly the softmax strategy in @algo-mwu, as claimed.
+    Since $F$ is strictly concave and $x_a^*$ has positive coordinates while satisfying the Lagrange conditions, it is the unique maximizer. Thus FTRL recovers exactly the softmax strategy in @algo-mwu.
   ]
 ]
 
