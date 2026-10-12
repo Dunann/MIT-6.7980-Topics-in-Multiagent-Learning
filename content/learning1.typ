@@ -369,6 +369,28 @@ In the special case in which $psi(vx) := 1/2 norm(vx)_2^2$, then the OMD algorit
   $
 ] <def-online-gradient-ascent>
 
+#example[Projecting a gradient step onto the simplex][
+  Suppose there are two actions, with
+  $
+    vx^((t)) = (0.6, 0.4), quad vg^((t)) = (1, 0), quad eta = 0.5.
+  $
+  The unconstrained gradient step gives
+  $
+    vz := vx^((t)) + eta vg^((t)) = (1.1, 0.4).
+  $
+  But this is not a probability distribution. Projected gradient ascent chooses the closest point on the simplex in Euclidean distance:
+  $
+    vx^((t+1)) = Pi_(Delta(A))(vz)
+    = argmin_(vx in Delta(A)) norm(vx - vz)_2^2.
+  $
+  Any point $(p, 1-p)$ has squared distance to $vz$ equal to
+  $
+    (p - 1.1)^2 + (1-p - 0.4)^2
+    = 2(p - 0.85)^2 + 0.125.
+  $
+  This is minimized at $p = 0.85$, giving $vx^((t+1)) = (0.85, 0.15)$. Geometrically, we subtract $0.25$ from each coordinate: this removes the excess mass of $0.5$ by moving perpendicular to the line $x_1 + x_2 = 1$. 
+]
+
 Since the squared Euclidean norm is $1$-strongly convex with respect to the $ell_2$ norm, the regret bound for OGD can be derived from the general bound for OMD (@ftrl-omd-regret-bound) and is as follows.
 
 #theorem[Regret bound for OGD][
