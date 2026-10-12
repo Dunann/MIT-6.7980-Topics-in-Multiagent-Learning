@@ -41,7 +41,7 @@ Our goal is to make sure that the regret grows sublinearly in $T$ no matter the 
 
 == Follow-the-leader
 
-Perhaps the most natural idea would be to always play the action with the highest cumulated regret (breaking ties, say, lexicograpsically). After all, this is the action we wish the most we had played in the past. This algorithm is called _follow-the-leader (FTL)_. Unfortunately, this idea is known not to work. To see that, consider the following sequence of gradient vectors:
+Perhaps the most natural idea would be to always play the action with the highest cumulated regret (breaking ties, say, lexicographically). After all, this is the action we wish the most we had played in the past. This algorithm is called _follow-the-leader (FTL)_. Unfortunately, this idea is known not to work. To see that, consider the following sequence of gradient vectors:
 
 $
   vg^((1)) = vec(0, 1\/2), quad vg^((2)) = vec(1, 0), quad vg^((3)) = vec(0, 1), quad vg^((4)) = vec(1, 0), quad vg^((
@@ -238,7 +238,7 @@ Finally, we turn our attention to the third way of obtaining no-regret algorithm
   The follow-the-_regularized_-leader algorithm (FTRL; sometimes also called "regularized follow-the-leader") defines the choice of strategy#footnote[In particular, $vx^((1)) := argmin_(xhat in Delta(A)) psi(xhat)$ since the regrets of all actions are $0$ at the beginning.]
   $
     vx^((t)) & := argmax_(xhat in Delta(A)) {ip(vr^((t-1)), xhat) - 1 / eta psi(xhat)}.
-  $]
+  $] <def-ftrl-simplex>
 The regularization term $-psi(xhat)$ _limits the amount of variation between consecutive strategies_. This makes intuitive sense: if $eta -> 0$, $vx^((t))$ is constant (and equal to $argmin_(xhat in Delta(A)) psi(xhat)$). When $eta = oo$, we recover the follow-the-leader algorithm, where strategies can jump arbitrarily. For intermediate $eta$, as you might expect, the amount of variation between strategies at consecutive times is bounded above by a quantity proportional to $eta$:
 $
   norm(vx^((t+1)) - vx^((t))) <= eta norm(vg^((t)))_*,
@@ -374,6 +374,43 @@ The next plots illustrate the behavior of OGD and MWU in a simple $2 times 2$ ga
     text-width: 36%,
   )
 ]
+
+= Problems <sec-learning1-problems>
+
+#exercise[Proving MWU is a case of FTRL][
+  In @sec-omd-mwu, we claimed that multiplicative weights update is a special case of #link(<def-ftrl-simplex>)[FTRL] with regularizer equal to the negative entropy function $H(vx) := sum_(a in A) x_a log x_a$. Prove this claim, letting $eta > 0$ and using the convention $0 log 0 := 0$. Show that
+  $
+    argmax_(vx in Delta(A)) {ip(vr^((t-1)), vx) - 1/eta sum_(a in A) x_a log x_a}
+    = "softmax"(eta vr^((t-1))).
+  $
+
+
+  #solution[
+    Multiplying the objective by $eta > 0$ does not change its maximizer, so we wish to maximize
+    $
+      F(vx) := eta ip(vr^((t-1)), vx) - sum_(a in A) x_a log x_a.
+    $
+    We proceed with the method of lagrange multipliers. For a candidate with positive coordinates, the Lagrangian for the sum constraint $sum_(a in A) x_a = 1$ is
+    $
+      L(vx, lambda) := F(vx) + lambda (1 - sum_(a in A) x_a).
+    $
+    Setting its partial derivatives to zero gives for each $a$
+    $
+      eta r_a - log x_a - 1 - lambda = 0
+      quad => quad x_a = exp(eta r_a - 1 - lambda).
+    $
+    Normalizing the coordinates to sum to one therefore yields
+    $
+      x_a^* = (exp(eta r_a)exp(-1-lambda)) / (sum_(b in A) exp(eta r_b)exp(1-lambda))=exp(eta r_a) / (sum_(b in A) exp(eta r_b)) .
+    $
+    This candidate has strictly positive coordinates. Since $F$ is strictly concave on the simplex, it is the unique global maximizer, including over boundary points. Indeed, the concavity inequality at $vx^*$ gives
+    $
+      F(vx) <= F(vx^*) + ip(nabla F(vx^*), vx - vx^*) = F(vx^*),
+    $
+    because $nabla F(vx^*) = lambda vone$ and both strategies sum to one. Thus the FTRL strategy is exactly the softmax strategy in @algo-mwu, as claimed.
+  ]
+]
+
 
 #lec_bibliography("meta/refs.bib")
 
